@@ -17,14 +17,23 @@ class Audio {
 
 class Window {
 public:
-    ~Window();
+    ~Window() {
+        if(glfwwindow_) {
+            GlfwDestroyWindow(glfwwindow_);
+            GLFWTerminate();
+        }
+    }
 
     Window(const Window& right) = delete;
     Window & operator=(const Window& right) = delete;
 
-    Window(Window& right) = default;
-    Window & operator=(Window& right) = default;
-
+    Window(Window&& right) : glfwwindow_{right.glfwwindow_}{
+        right.glfwwindow_ = nullptr;
+    }
+    Window & operator=(Window&& right) {
+        glfwwindow_ = right.glfwwindow_;
+        right.glfwwindow_ = nullptr;
+    }
  
     static std::optional<Window> create();
 
@@ -35,6 +44,11 @@ private:
     GLFWWindow* glfwwindow_;
 };
 
+struct Action{
+    Button[] buttons; // SPACE,X...
+    Type type; //bool,float,vec2,vec3...
+    Action action: //PRESS,RELEASE,DOWN
+}
 Window a;
 Window b = a;
 
@@ -52,6 +66,10 @@ std::optional<Window> Window::create() {
 
     return Window{gw};
 }
+
+class  Input {
+        bool IsPressed(Button b) const;
+};
 
 class Engine {
     public:
@@ -85,16 +103,52 @@ std::optional<Engine> Engine::create() {
 Engine::Engine(Window& window) : window_{std::move(window)}, audio_{}, mientero_{3} {
 }
 
+
+class Animation {
+    Animation(Input& i) 
+    void animwithinput() {
+
+    }
+
+};
+
+
+
 int main(int, char**) {
     std::optional<Engine> maybe_e = Engine::create();
     if(!maybe_e) return -1;
     
     Engine e =std::move(maybe_e.value());
 
+    Input& i = e.input();
+
+    i.SetDeadzone(0.01,0.01);
+
+    Action jump;
+    jump.key = "SPACE";
+    
+    vec3 player;
+    bool direction;
     while(!e.IsClosing()) {
         bool algo;
         if(algo) e.Close();
+        if(i.isPressed(ChangeRotationDirection)){
+            player += up;
+        }
 
+        i.isKeyUp(Jump);
+        if(i.isKeyDown("SPACE")){
+            direction = !direction;
+        }
+        player.xy += i.AxisValue();
+
+        
+        if(i.JoystickMoving()) {
+                                vec2 movement = i.MouseOffset();
+             player.xy += i;
+        }
+        vec2 movement = i.MouseOffset();
+        player.xy += movement;
         e.EndFrame();
     }
     return 0;
