@@ -112,9 +112,76 @@ class Animation {
 
 };
 
+enum class DefaultActions {
+    Up = GLFW_INPUT_W,
+    Down,
+    Jump,
+};
+
+enum class Actions {
+    Up = Input::DefaultActions::Up,
+    Down,
+    Jump,
+};
 
 
-int main(int, char**) {
+class Input {
+    int a;
+    public:
+
+    Input& operator()(int);
+
+    Input(GLFWWindow* w) : window_{w} {
+        if(window_input_map_.empty()) {
+           glfw_setkeycallback(window_,static_callback);
+        }
+        Input::window_input_map_.insert(window_,this);
+        this->a = 1;
+    }
+    ~Input() {
+        Input::window_input_map_.erase(window_);
+    }
+
+    //TODO Implement move
+    //TODO delete copy
+    GLFWWindow* window_;
+
+    static void static_callback(GLFWWindow*w,int a,int b,int c,int d) {
+        window_input_map_[w]->callback(a,b,c,d);
+
+        void (*myp)(int, float); 
+    }
+    void callback(GLFWWindow*w,int a,int b,int c,int d) {
+    }
+
+    static std::map<GLFWWindow*,Input*> window_input_map_;
+
+};
+
+struct millamable {
+    float operator()(int a,float b) {
+        if(a>4) b *= 45;
+        return b;
+    }
+}
+
+auto main(int, char**) -> int {
+
+    millamable m;
+    m(1,2.0f);
+
+
+
+    auto milambda = [](int a, float b) -> float {
+        if(a>4) b *= 45;
+        return b;
+    };
+
+    std::vector<int> vi;
+    std::sort(vi.begin(),vi.end(),milambda);
+
+
+
     std::optional<Engine> maybe_e = Engine::create();
     if(!maybe_e) return -1;
     
