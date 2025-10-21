@@ -17,6 +17,23 @@
         "xutility": "cpp",
         "tuple": "cpp",
         "vector": "cpp",
-        "xmemory": "cpp"
+        "xmemory": "cpp",
+        "atomic": "cpp",
+        "memory": "cpp",
+        "list": "cpp",
+        "algorithm": "cpp",
+        "cmath": "cpp",
+        "ctime": "cpp",
+        "functional": "cpp",
+        "iosfwd": "cpp",
+        "limits": "cpp",
+        "new": "cpp",
+        "ratio": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp",
+        "typeinfo": "cpp",
+        "unordered_map": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp"
     }
 }
