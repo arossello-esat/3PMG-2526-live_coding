@@ -2,6 +2,8 @@
 #include<algorithm>
 #include<functional>
 #include<thread>
+#include<queue>
+#include<future>
 
 class JobSystem {
     public:
@@ -21,7 +23,7 @@ class JobSystem {
     }
 
 
-    static void worker() {
+    void worker() {
         while (true) {
             std::function<void()> task;
             {
@@ -43,8 +45,8 @@ class JobSystem {
         condition_.notify_one();
     }
 
-    template<typename T,typename U>
-    std::future<U> enqueue(T task) {
+    template<typename T>
+    std::future<std::invoke_result<T()>> enqueue(T task) {
         std::packaged_task<U()> pt(std::move(task));
         std::future<U> result = pt.get_future();
         {
@@ -102,22 +104,14 @@ int main(int, char**) {
 
 a = 13.0f
 
+JobSystem jobs;
 
+         auto task1 = jobs.enqueue([](){return 1;});
+         auto task2 = jobs.enqueue([](){return 1.0f;});
 
+         jobs.enqueue([](int a, float b){return 1.0f;},task1,task2);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+         
 
 
 

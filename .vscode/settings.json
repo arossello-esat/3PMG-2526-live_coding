@@ -34,6 +34,22 @@
         "typeinfo": "cpp",
         "unordered_map": "cpp",
         "xhash": "cpp",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "bit": "cpp",
+        "cctype": "cpp",
+        "clocale": "cpp",
+        "condition_variable": "cpp",
+        "deque": "cpp",
+        "coroutine": "cpp",
+        "resumable": "cpp",
+        "future": "cpp",
+        "iterator": "cpp",
+        "mutex": "cpp",
+        "queue": "cpp",
+        "stdexcept": "cpp",
+        "system_error": "cpp",
+        "xfacet": "cpp",
+        "xlocale": "cpp",
+        "xlocinfo": "cpp"
     }
 }
