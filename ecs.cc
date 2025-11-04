@@ -1,15 +1,33 @@
 #include <vector>
 #include <memory>
+#include <unordered_map>
 
 struct TransformComponent { };
 struct LifeComponent { float life; };
 struct AIComponent { float agressiveness; };
-struct DrawComponent { };
+struct DrawComponent {
+    //&std::shared_ptr<Mesh>
+    Opengl_Mesh_id 
+    std::shared_ptr<Texture>
+    bool lit;
+    bool cast_shadows;
+    
+ };
+
+ void RenderSystem(std::vector<DrawComponent>& draw) {
+    for(auto& d : draw) {
+        d.Draw();
+    }
+}
+
 
 
 void RegenerateHealth(std::vector<LifeComponent>& life) {
+    // Bind program
+    // bindear VAO, VBO, texturas
     for(auto& l : life) {
-        l.life += 0.1f;
+        // Poner uniforms
+        // pintar
     }
 }
 
@@ -23,50 +41,177 @@ void FightOrFlee(std::vector<LifeComponent>& life,std::vector<AIComponent>& ai) 
     }
 }
 
-class ECSListBase {};
+// class ECSListBase {
+//     public:
+//     virtual void grow() = 0;
+//     virtual size_t size() = 0;
+
+// };
+
+
+// template<typename T>
+// class ECSList : public ECSListBase {
+//     public:
+//     virtual void grow() { list.emplace_back(); }
+//     virtual size_t size() { return list.size(); }
+
+//     std::vector<std::optional<T>> list;
+// };
+
+// class ECSManager {
+//     std::unordered_map<std::size_t,std::unique_ptr<ECSListBase>> component_map_;
+
+//     public:
+//     template<typename T> std::vector<T>& get_component_list() {
+//         std::size_t hash = typeid(T).hash_code();
+//         auto it = component_map_.find(hash);
+//         if(it == component_map_.end()) {
+//             assert(false && "Component type unknown");
+//         }
+
+//         ECSListBase& eclb = *(it->second);
+//         ECSList<T>& eclt = static_cast<ECSList<T>&>(eclb);
+
+//         return eclt;
+//     }
+
+
+//     template<typename T>
+//         void apply(T call) {
+//             call(transform_list);
+//         }
+//     template<typename T> T* get_component(unsigned long entity) {
+//         auto& maybe_component = get_component_list()[entity];
+//         if(maybe_component) {
+//             return &(maybe_component.value())
+//         } else return nullptr;
+//     }
+
+//     template<typename T> void AddComponentType() {
+//         std::size_t hash = typeid(T).hash_code();
+//         using vt = std::unordered_map<std::size_t,std::unique_ptr<ECSListBase>>::value_type;
+
+//         std::unique_ptr<ECSListBase> ecslbptr = std::make_unique<ECSList<T>>(); 
+
+//         component_map_.insert(vt{hash,ecslbptr});
+
+//     }
+//     unsigned long AddEntity() {
+//         auto size = component_map_.begin()->second->size();
+//         for(auto& cl : component_map_ ) {
+//             cl.second->grow();
+//         }
+//         return size;
+//     }
+
+//     // Componentes opcionales
+
+
+//     // Borrar entidades
+
+
+// };
+
+
+class ECSListBase {
+    public:
+    virtual void grow() = 0;
+    virtual size_t size() = 0;
+
+};
 
 
 template<typename T>
 class ECSList : public ECSListBase {
-    std::vector<T> list;
+    public:
+    virtual void grow() { list.emplace_back(); }
+    virtual size_t size() { return list.size(); }
+
+    std::vector<std::pair<short,T>> list;
 };
+
 
 class ECSManager {
-    typeid()
-    std::vector<std::unique_ptr<ECSListBase>> list;
+    std::unordered_map<std::size_t,std::unique_ptr<ECSListBase>> component_map_;
 
     public:
-    template<typename T> std::vector<T>& get_list();
-    std::vector<LifeComponent>& get_life_list();
-    std::vector<AIComponent>& get_ai_list();
-    std::vector<DrawComponent>& get_draw_list();
+    template<typename T> void AddComponentType();
+    
+    unsigned long AddEntity();
+    void RemoveEntity(unsigned long);
+    
+    template<typename T> std::vector<T>& GetComponentList() ;
 
-    template<typename T> T& get_component(unsigned long entity);
+    template<typename T> T* GetComponent(unsigned long entity);
+    template<typename T> T* AddComponent(unsigned long entity);
+    template<typename T> void RemoveComponent(unsigned long entity);
 
-    template<typename T>
-        void apply(T call) {
-            call(transform_list);
-        }
+    // Componentes opcionales
 
-    template<typename T> void AddComponentType() {
-        list.push_back(std::make_unique<T>())
-    }
-    unsigned long AddEntity() {
-        transform_list.emplace_back();
-        life_list.emplace_back();
-        ai_list.emplace_back();
-        draw_list.emplace_back();
-        return transform_list.size() -1;
-    }
+
+    // Borrar entidades
+
+
 };
+
+std::unordered_map<std::size_t,std::unique_ptr<ECSListBase>> component_map_;
+
+
+template<typename T> std::vector<T>& ECSManager::get_component_list() {
+    std::size_t hash = typeid(T).hash_code();
+    auto it = component_map_.find(hash);
+    if(it == component_map_.end()) {
+        assert(false && "Component type unknown");
+    }
+
+    ECSListBase& eclb = *(it->second);
+    ECSList<T>& eclt = static_cast<ECSList<T>&>(eclb);
+
+    return eclt.list;
+}
+
+
+template<typename T> T* ECSManager::get_component(unsigned long entity) {
+    auto& cl = get_component_list()[entity];
+    
+    std::lower_bound()
+}
+
+template<typename T> void ECSManager::AddComponentType() {
+    std::size_t hash = typeid(T).hash_code();
+    using vt = std::unordered_map<std::size_t,std::unique_ptr<ECSListBase>>::value_type;
+
+    std::unique_ptr<ECSListBase> ecslbptr = std::make_unique<ECSList<T>>(); 
+
+    component_map_.insert(vt{hash,ecslbptr});
+
+}
+unsigned long ECSManager::AddEntity() {
+    auto size = component_map_.begin()->second->size();
+    for(auto& cl : component_map_ ) {
+        cl.second->grow();
+    }
+    return size;
+}
+
 
 int main(int argc, char* argv[]) {
 
     ECSManager ecs;
 
     ecs.AddComponentType<LifeComponent>();
+    ecs.AddComponentType<TransformComponent>();
+    ecs.AddComponentType<AIComponent>();
+    ecs.AddComponentType<DrawComponent>();
 
-    RegenerateHealth(ecs.get_list<LifeComponent>());
+    // component_map_ = {
+    //     {314123,std::unique_ptr<ECSListBase>} -> std::unique_ptr<ECSList<LifeComponent>>.list = {}
+    //     {123443,std::unique_ptr<ECSListBase>} -> std::unique_ptr<ECSList<TransformComponent>>.list = {}
+    //     {324234,std::unique_ptr<ECSListBase>} -> std::unique_ptr<ECSList<AIComponent>>.list = {}
+    //     {234234,std::unique_ptr<ECSListBase>} -> std::unique_ptr<ECSList<DrawComponent>>.list = {}
+    // }
+
+    RegenerateHealth(ecs.get_component_list<LifeComponent>());
 
     unsigned long player = ecs.AddEntity();
 
