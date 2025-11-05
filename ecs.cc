@@ -1,14 +1,15 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <optional>
 
 struct TransformComponent { };
 struct LifeComponent { float life; };
 struct AIComponent { float agressiveness; };
 struct DrawComponent {
     //&std::shared_ptr<Mesh>
-    Opengl_Mesh_id 
-    std::shared_ptr<Texture>
+    // Opengl_Mesh_id 
+    // std::shared_ptr<Texture>
     bool lit;
     bool cast_shadows;
     
@@ -38,9 +39,36 @@ void FightOrFlee(std::vector<LifeComponent>& life,std::vector<AIComponent>& ai) 
     for(; life_it != life.end() && ai_it != ai.end(); life_it++,ai_it++) {
 
         if(ai_it->agressiveness > life_it->life) attack();
+        else flee();
     }
 }
 
+void FightOrFlee2(std::vector<std::optional<LifeComponent>>& life,std::vector<std::optional<AIComponent>>& ai) {
+
+    auto life_it = life.begin();
+    auto ai_it = ai.begin();
+    for(; life_it != life.end() && ai_it != ai.end(); life_it++,ai_it++) {
+        if(!ai_it->has_value() || !life_it->has_value()) continue;
+
+        if(ai_it->agressiveness > life_it->life) attack();
+        else flee();
+    }
+}
+
+void FightOrFlee2(std::vector<std::pair<size_t,LifeComponent>>& life,std::vector<std::pair<size_t,AIComponent>>& ai) {
+
+    auto life_it = life.begin();
+    auto ai_it = ai.begin();
+    for(; life_it != life.end() && ai_it != ai.end(); life_it++,ai_it++) {
+
+        if(ai_it->first != life_it->first) {
+            continue;
+        }
+
+        if(ai_it->agressiveness > life_it->life) attack();
+        else flee();
+    }
+}
 // class ECSListBase {
 //     public:
 //     virtual void grow() = 0;
@@ -127,7 +155,8 @@ class ECSList : public ECSListBase {
     virtual void grow() { list.emplace_back(); }
     virtual size_t size() { return list.size(); }
 
-    std::vector<std::pair<short,T>> list;
+    std::vector<std::pair<size_t,T>>
+    bool dirty;
 };
 
 
@@ -139,7 +168,7 @@ class ECSManager {
     
     unsigned long AddEntity();
     void RemoveEntity(unsigned long);
-    
+
     template<typename T> std::vector<T>& GetComponentList() ;
 
     template<typename T> T* GetComponent(unsigned long entity);
