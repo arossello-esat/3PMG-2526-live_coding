@@ -159,17 +159,51 @@ class ECSList : public ECSListBase {
     bool dirty;
 };
 
-
 class ECSManager {
     std::unordered_map<std::size_t,std::unique_ptr<ECSListBase>> component_map_;
 
     public:
+
+    template<typename T>
+    struct Iterator {
+            Iterator& operator++() {
+                it_++;
+                return *this;
+            }
+            
+            T* operator*() {
+                if(it_->has_value()) {
+                    return it_->value();
+                } else return nullptr;
+            }
+
+            bool operator==(const Iterator& other) const {
+                return it_ == other.it_;
+            }
+            bool operator!=(const Iterator& other) const {
+                return it_ != other.it_;
+            }
+        std::vector<std::optional<T>>::iterator it_;
+    };
+
+    template<typename T>
+    struct ContainerFacade {
+        Iterator<T> begin() {
+            return Iterator<T>{list_.begin()};
+         }
+        Iterator<T> end(){
+            return Iterator<T>{list_.end()};
+
+        }
+        std::vector<std::optional<T>>& list_;
+    };
+
     template<typename T> void AddComponentType();
     
     unsigned long AddEntity();
     void RemoveEntity(unsigned long);
 
-    template<typename T> std::vector<T>& GetComponentList() ;
+    template<typename T> ContainerFacade<T> GetComponentList() ;
 
     template<typename T> T* GetComponent(unsigned long entity);
     template<typename T> T* AddComponent(unsigned long entity);
@@ -183,7 +217,31 @@ class ECSManager {
 
 };
 
+
+void PatataSystem(ContainerFacade<Patata> cp) {
+
+    for(auto it = cp.begin() ; it != cp.end() ; it++) {
+        *it = // LOQUESEA
+    }
+
+}
+
 std::unordered_map<std::size_t,std::unique_ptr<ECSListBase>> component_map_;
+
+
+template<typename T>
+ECSManager::ContainerFacade<T> ECSManager::GetComponentList() {
+    std::size_t hash = typeid(T).hash_code();
+    auto it = component_map_.find(hash);
+    if(it == component_map_.end()) {
+        assert(false && "Component type unknown");
+    }
+
+    ECSListBase& eclb = *(it->second);
+    ECSList<T>& eclt = static_cast<ECSList<T>&>(eclb);
+
+    return ContainerFacade<T>{eclt.list};
+}
 
 
 template<typename T> std::vector<T>& ECSManager::get_component_list() {
