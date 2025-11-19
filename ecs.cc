@@ -282,6 +282,28 @@ unsigned long ECSManager::AddEntity() {
 }
 
 
+class FighterArchetype {
+    public:
+        FighterArchetype(ECSManager& ecs,size_t entity)
+            : lc_{*(ecs.GetComponent<LifeComponent>(entity))}
+            , ac_{*(ecs.GetComponent<AIComponent>(entity))}
+        {
+            assert(&lc_ && &ac_);
+
+        }
+
+        IsFleeing();
+
+        CanRun();
+
+        Jump();
+
+    private:
+    LifeComponent& lc_;
+    AIComponent& ac_;
+};
+
+
 int main(int argc, char* argv[]) {
 
     ECSManager ecs;
@@ -304,5 +326,9 @@ int main(int argc, char* argv[]) {
 
     ecs.get_component<LifeComponent>(player).life = 100.0f;
 
+    FighterArchetype playerAsFighter{ecs,player};
+    if(playerAsFighter.IsFleeing() && playerAsFighter.CanRun()) {
+        playerAsFighter.Jump();
+    }
     return 0;
 }
