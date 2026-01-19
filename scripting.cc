@@ -24,25 +24,23 @@ struct ECSManager {
     T& GetComponent(int entity);
 };
 
-std::function(void(ESCManager&)) = &ECSManager::f;
-
-
 struct LifeComponent { float value;};
 
 int main(int,char**) {
 
     sol::state state;
+    state.open_libraries(sol::lib::base);
 
-    auto ptm = &ECSManager::GetComponent<LifeComponent>;
 
     ECSManager ecs;
 
     int player = ecs.CreateEntity();
-    ecs->*ptm();
+    {
+        auto ptm = &ECSManager::GetComponent<LifeComponent>;
+        ecs->*ptm();
+    }
 
-    state.usertype<ECSManager> lua_ecs = state.new_usertype<ECSManager>("ECS",
-        "GetLife", &ECSManager::GetComponent<LifeComponent>
-    );
+    state.usertype<ECSManager> lua_ecs = state.new_usertype<ECSManager>("ECS");
 
     for(auto&& [key,value] : type_map) {
             lua_ecs["Get"+ value.name()] = value.GetComponent;
@@ -56,12 +54,44 @@ int main(int,char**) {
     state.set("ECS",recs);
 
     sol::load_result chunk = state.load(lua_program);
-    assert(chunk.valid());
+    if(chunk.valid()) {
+        chunk();
 
-    sol::protected_function add_life = state["add_life"];
-    state["shield"];
-    sol::protected_function_result  res= add_life(player);
-    bool full_life = res;
+        sol::protected_function add_life = state["add_life"];
+        state["shield"];
+        sol::protected_function_result  res= add_life(player);
+        bool full_life = res;
+    }
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
