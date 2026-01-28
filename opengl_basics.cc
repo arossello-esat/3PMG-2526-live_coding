@@ -155,3 +155,125 @@ int main(int,char**) {
     glDeleteProgram(shaderProgram);
 
 }
+
+struct RenderComponent;
+struct TransformComponent;
+
+struct PhongTransparencyRenderSystem {
+    template<typename T> using CompL = std::vector<std::optional<T>>;
+    PhongRenderSystem();
+    ~PhongRenderSystem();
+    void operator()(
+        const CompL<RenderComponent>& rcl,
+        const CompL<TransformComponent>& tcl,
+    );
+
+    Program program_;
+    ShaderLocation lightpos;
+    ShaderLocation model;
+    ShaderLocation view;
+    ShaderLocation projection;
+    ...;
+};
+
+PhongTransparencyRenderSystem::PhongTransparencyRenderSystem()
+ : program_{Assets::Load("shaders/Phong.prog")}{
+
+    lightpos = program_.getLocation("LightPos");
+    ...;
+}
+
+PhongTransparencyRenderSystem::~PhongTransparencyRenderSystem() {
+
+}
+
+PhongTransparencyRenderSystem::operator()(
+        const CompL<RenderComponent>& rcl,
+        const CompL<TransformComponent>& tcl,
+        const LightComponent& light,
+        const CameraComponent& camera
+    ) {
+
+        // BINDEAMOS Y SETEAMOS MAQUINA DE ESTADO
+        lightArray // lightArray
+        camera // Transformaciones (View Projection)
+        program_ // Shaders ->Program (Vertex Fragment)
+        for(light : lightArray) {
+            if(first_light) {
+                glDepthFunc(GL_LESS);
+                glDepthMask(GL_TRUE);
+                glDisable(GL_BLEND);
+            }
+            //ACTIVAR ZBUFFER LECTURA/ESCRITURA
+            vector<...> transparentCache;
+            for(;;){
+
+                if(rc->transparent) {
+                    transparentCache.insert(&rc,&tc);
+                    continue;
+                }
+                auto rc = ...;
+                auto tc = ...;
+
+                // POR CADA ENTIDAD BINDEAMOS TEXTURA VAO VBO
+                rc->Vertices;
+                rc->Faces;
+                tc->Model; //Transformaciones (Model)
+                rc->Texturas
+                rc->VAO
+
+                glDraw()
+            }
+
+            //ACTIVAR ZBUFFER LECTURA
+            // AJUSTAR GLBLEND
+            sortDistance(camera,transparentCache);
+            for(auto[rc,tc] : transparentCache){
+
+                // POR CADA ENTIDAD BINDEAMOS TEXTURA VAO VBO
+                rc->Vertices;
+                rc->Faces;
+                tc->Model; //Transformaciones (Model)
+                rc->Texturas
+                rc->VAO
+            // RENDER
+
+                glDraw()
+            }
+            if(first_light) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE); // Additive blending
+            glBlendEquation(GL_FUNC_ADD);
+            
+            // No escribir al depth buffer, pero sí leer de él
+            glDepthMask(GL_FALSE);
+            glDepthFunc(GL_EQUAL); // Solo renderizar fragmentos en la misma profundidad
+            
+            }
+        }
+}
+
+
+int main(int,char**) {
+    auto engine = Engine(...);
+    auto window = Window(...);
+    //Input
+    auto ecs = EntityManager(...);
+    // Rellenar de entidades el ecs
+
+    auto render_system = PhongRenderSystem(...);
+    while(!window.done()) {
+        // INPUT
+        //UPDATE
+
+
+
+
+
+        render_system(ecs.GetRCList(),ecs.GetTCList());
+
+
+        window.swap()
+    }
+
+}
