@@ -173,3 +173,84 @@ void PhongRenderSystem(const std::vector<RenderComponent>& rcv,
         }
 
     }
+
+
+
+
+class ShadowMapRenderSystem {
+    Program shadow_pass;
+    Program light_pass;
+
+    // SON LO MISMO
+    Texture shadow_texture;
+    FBO shadow_buffer;
+    Framebuffer shadow_target;
+
+    ShadowMapRenderSystem() {
+        shadow_pass.Load();
+        light_pass.Load();
+
+        genTexture(&shadow_texture...);
+        //...
+
+
+    }
+
+    ~ShadowMapRenderSystem() {
+        //DESTRUCCION!
+    }
+
+    void OverwritePassSettings() {
+        disableBlend();
+        enableZWrite();
+        zfunction(LESS);
+    } // SOBRESCRIBE IMAGEN, CON OVERDRAW, GENERA ZBUFFER
+
+    void BlendPassSettings () {
+        enableBlend();
+        disableZWrite();
+        zfunction(EQUAL);
+    } // SUMA EN IMAGEN, SIN OVERDRAW, USA ZBUFFER
+
+    void operator(
+        const std::vector<>& renderComponent,
+        const std::vector<>& transformComponent,
+        const std::vector<>& lightComponent,
+        const Camera &cam) {
+
+        for(light,lightTransform : lightComponent,transformComponent) {
+            //CALCULO DE SHADOW MAP
+            OverwritePassSettings()
+            updateViewport(ShadowFrameBuffer);
+            bind(ShadowFrameBuffer);
+            bind(ShadowProgram);
+            bind(lightTransform);
+            bind(light);
+            for(render,transform : renderComponent, transformComponent) {
+                bind(render);
+                bind(transform);
+                glDrawElements();
+            }
+            // ESTO RENDERIZA LA PROFUNDIDAD DE LA ESCENA DESDE EL PUNTO DE VISTA DE LA LUZ, EN EL ZBUFFER
+            // 
+
+            if(firstpass) { // Redundante porque es igual que en el render de sombras
+                OverwritePassSettings();
+            } else {
+               BlendPassSettings();
+            }
+            updateViewport(default); // Framebuffer por defecto, la pantalla
+            bind(default); // Framebuffer por defecto, la pantalla
+            bind(lightProgram);
+            bind(cameraTransform);
+            bind(light);
+            bind(ShadowTexture);
+            for(render,transform : renderComponent, transformComponent) {
+                bind(render);
+                bind(transform);
+                bind(modelTextures);
+                glDrawElements();
+            }
+        }
+    }
+};

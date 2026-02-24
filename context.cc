@@ -2,7 +2,7 @@
 
 class Context {
 
-    template<typename T> Add(T* service);
+    template<typename T,int I> Add(T* service);
     template<typename T> T* Get();
     std::unordered_map<size_t,void*> context_;
 };
